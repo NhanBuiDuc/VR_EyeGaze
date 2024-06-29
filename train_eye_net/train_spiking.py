@@ -24,7 +24,10 @@ from utils import get_predictions
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 from utils import init_spike_unet
+import torch.nn as nn
+from tqdm import tqdm
 #%%
+# os.environ["CUDA_VISIBLE_DEVICES"] = "0, 1, 2, 3, 4"
 
 def lossandaccuracy(loader, model, factor):
     epoch_loss = []
@@ -71,7 +74,7 @@ if __name__ == '__main__':
     else:
         device=torch.device("cpu")
         torch.manual_seed(12)
-        
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     torch.backends.cudnn.deterministic=False
     
     if args.model not in model_dict:
@@ -85,7 +88,10 @@ if __name__ == '__main__':
     logger = Logger(os.path.join(LOGDIR,'logs.log'))
     
     # model = model_dict[args.model]
-    model, simulator = init_spike_unet(input_channel = 1)
+    model, simulator = init_spike_unet(input_channel = 1, class_num = 4)
+    if torch.cuda.device_count() > 1:
+        print("Let's use", torch.cuda.device_count(), "GPUs!")
+        model = nn.DataParallel(model)
     model  = model.to(device)
     model.train()
     nparams = get_nparams(model)
@@ -117,22 +123,22 @@ if __name__ == '__main__':
     if args.epochs>125:
         alpha[125:] = 1
     ious = []        
-    for epoch in range(args.epochs):
-        for i, batchdata in enumerate(trainloader):
+    for epoch in tqdm(range(args.epochs), desc="Epochs"):
+        for i, batchdata in enumerate(tqdm(trainloader, desc="Batches", leave=False)):
             img, labels, index, spatialWeights, maxDist= batchdata
             data = img.to(device)
-            target = labels.to(device).long()  
+            target = labels.long().to(device)  
             optimizer.zero_grad()            
-            output = simulator.simulate_for_sample(model, data)
+            output = simulator.simulate_for_sample(model, data).to(device)
             ## loss from cross entropy is weighted sum of pixel wise loss and Canny edge loss *20
-            CE_loss = criterion(output,target)
+            CE_loss = criterion(output,target).to(device)
             loss = CE_loss * (
                 torch.from_numpy(np.ones(spatialWeights.shape)).to(torch.float32).to(device) 
                 + (spatialWeights).to(torch.float32).to(device)
             )
             
             loss = torch.mean(loss).to(torch.float32).to(device)
-            loss_dice = criterion_DICE(output,target)
+            loss_dice = criterion_DICE(output,target).to(device)
             loss_sl = torch.mean(criterion_SL(output.to(device), (maxDist).to(device)))
             
             ##total loss is the weighted sum of suface loss and dice loss plus the boundary weighted cross entropy loss

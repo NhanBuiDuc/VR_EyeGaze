@@ -43,7 +43,8 @@ class simulator(object):
         self.reset_snn(model)
         self.set_state(model, 'eval')
         with torch.no_grad():
-            static_coding = model.conv1(data)
+            static_coding = model.module.conv1(data)
+            # static_coding = model.conv1(data)
             for time in range(1, self.timesteps + 1):
                 if time == 1:
                     output_mem = model.forward(static_coding, 'img')
@@ -53,7 +54,8 @@ class simulator(object):
         model.train()
         self.set_state(model, 'train')
         with torch.enable_grad():
-            static_coding = model.conv1(data * self.timesteps)
+            static_coding = model.module.conv1(data * self.timesteps)
+            # static_coding = model.module.conv1(data * self.timesteps)
             output = model.forward(static_coding, 'img')
             output = output / self.timesteps
 

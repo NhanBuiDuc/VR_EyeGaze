@@ -80,7 +80,7 @@ class GeneralizedDiceLoss(nn.Module):
         # Rapid way to convert to one-hot. For future version, use functional
         Label = (np.arange(4) == target.cpu().numpy()[..., None]).astype(np.uint8)
         if self.useGPU:
-            target = torch.from_numpy(np.rollaxis(Label, 3,start=1)).cuda()
+            target = torch.from_numpy(np.rollaxis(Label, 3,start=1))
         else:
             target = torch.from_numpy(np.rollaxis(Label, 3,start=1))
 
@@ -90,7 +90,7 @@ class GeneralizedDiceLoss(nn.Module):
         # Flatten for multidimensional data
         if self.useGPU:
             ip = torch.flatten(ip, start_dim=2, end_dim=-1).cuda().to(torch.float32)
-            target = torch.flatten(target, start_dim=2, end_dim=-1).cuda().to(torch.float32)
+            target = torch.flatten(target, start_dim=2, end_dim=-1).to(torch.float32).to("cuda")
         else:
             ip = torch.flatten(ip, start_dim=2, end_dim=-1).to(torch.float32)
             target = torch.flatten(target, start_dim=2, end_dim=-1).to(torch.float32)
@@ -242,9 +242,9 @@ class Logger():
         self.log_file.flush()
         print (msg)        
 
-def init_spike_unet(input_channel = 1):
+def init_spike_unet(input_channel = 1, class_num = 4):
 
-    timesteps = 30
+    timesteps = 15
     dataset_name = "ISBI_2012"
     base_path = './spiking_unet/test/seg_train'
     method = "connection_wise"
@@ -253,7 +253,7 @@ def init_spike_unet(input_channel = 1):
     reset_method = 'reset_by_subtraction'
     vth = 1.0
     opts = "adam"
-    batch_size = 16
+    batch_size = 8
     learning_rate = 1e-6
     epochs = 100
     seed1 = "42"
@@ -272,7 +272,7 @@ def init_spike_unet(input_channel = 1):
     logs_path  = os.path.join(base_path, post_log_path)
 
     parser = Parser(path = './spiking_unet/lambda_factor/ISBI_2012')
-    pytorch_model = Segmentation_UNet(input_channel=input_channel, class_num=2, fnum=64) 
+    pytorch_model = Segmentation_UNet(input_channel=input_channel, class_num=class_num, fnum=16) 
     random_tensor = torch.randn((batch_size, input_channel, 640, 480), dtype= torch.float32)
 
     temp = pytorch_model(x = random_tensor, input_type = "original")
@@ -280,7 +280,7 @@ def init_spike_unet(input_channel = 1):
     parser_model = parser.parse(pytorch_model,random_tensor, method=method, scale_method=scale_method)
 
     snn_model = parser.convert_to_snn(parser_model, neuron_class=neuron_class, timesteps=timesteps, reset_method=reset_method, v_threshold=vth)
-    snn_model.to(device)
+    # snn_model.to(device)
 
     # model_path = os.path.join(path, 'snn_model', 'snn_model.pth')
 
