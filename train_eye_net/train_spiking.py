@@ -29,7 +29,7 @@ from tqdm import tqdm
 #%%
 # os.environ["CUDA_VISIBLE_DEVICES"] = "0, 1, 2, 3, 4"
 
-def lossandaccuracy(loader, model, factor):
+def lossandaccuracy(loader, model, factor, simulators):
     epoch_loss = []
     ious = []    
     model.eval()
@@ -40,7 +40,7 @@ def lossandaccuracy(loader, model, factor):
             data = img.to(device)
 
             target = labels.to(device).long()  
-            output = model(data)
+            output = simulator.simulate_for_sample(model, data).to(device)
             
             ## loss from cross entropy is weighted sum of pixel wise loss and Canny edge loss *20
             CE_loss = criterion(output,target)
@@ -155,7 +155,7 @@ if __name__ == '__main__':
             optimizer.step()
             
         logger.write('Epoch:{}, Train mIoU: {}'.format(epoch, np.average(ious)))
-        lossvalid, miou = lossandaccuracy(validloader, model, alpha[epoch])
+        lossvalid, miou = lossandaccuracy(validloader, model, alpha[epoch], simulator)
         totalperf = total_metric(nparams, miou)
         f = 'Epoch:{}, Valid Loss: {:.3f} mIoU: {} Complexity: {} total: {}'
         logger.write(f.format(epoch, lossvalid, miou, nparams, totalperf))

@@ -42,14 +42,14 @@ def option():
     parser.add_argument(
         "--model",
         type=str,
-        default="eye_net_m",
+        default="eye_net",
         help="dnn model, support eye_net, eye_net_m, pruned_eye_net",
     )
     parser.add_argument(
         "--pytorch_model_path",
         type=str,
         help="pytorch model path",
-        default="model_weights/EyeModel_best_mIoU.pth",
+        default="model_weights/eye_net.pkl",
     )
     parser.add_argument(
         "--disable_edge_info",

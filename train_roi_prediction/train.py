@@ -26,7 +26,7 @@ def option():
         "--device",
         type=str,
         help="device to run on, 'cpu' or 'cuda', only apply to pytorch, default: CPU",
-        default="cpu",
+        default="cuda",
     )
     parser.add_argument(
         "--num_workers",

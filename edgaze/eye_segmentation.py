@@ -141,7 +141,8 @@ class EyeSegmentation(object):
         """predict eye segmentation using the entire input image"""
 
         print(framename)
-        img = cv2.imread(framename, cv2.IMREAD_GRAYSCALE)
+        # img = cv2.imread(framename, cv2.IMREAD_GRAYSCALE)
+        img = cv2.imread(framename, cv2.IMREAD_COLOR)
         img = img.astype(numpy.float32)
         print("eye segmentation baseline", img.shape)
         img = skimage.color.rgb2gray(img).squeeze().astype(numpy.uint8)
