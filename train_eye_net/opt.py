@@ -7,7 +7,7 @@ def parse_args():
     # Data input settings
     parser.add_argument('--dataset', type=str, default='openEDS/', help='name of dataset')
     # Optimization: General
-    parser.add_argument('--bs', type=int, default = 10)
+    parser.add_argument('--bs', type=int, default = 4)
     parser.add_argument('--epochs', type=int,help='Number of epochs',default= 200)
     parser.add_argument('--workers', type=int,help='Number of workers',default=4)
     parser.add_argument('--model', help='model name',default='eye_net')
