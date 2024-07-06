@@ -229,10 +229,10 @@ def main():
             model, filter_model, focal_length, video_shape, sensor_size
         )
         # # Fit an eyeball model.
-        # inferer.process(dataset, mode="Fit", keyword=keyword)
+        inferer.process(dataset, mode="Fit", keyword=keyword)
 
-        # # store the eye model
-        # inferer.save_eyeball_model(model_name)
+        # store the eye model
+        inferer.save_eyeball_model(model_name)
 
         # load the eyeball model
         inferer.load_eyeball_model(model_name)

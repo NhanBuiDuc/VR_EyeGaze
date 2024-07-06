@@ -1,6 +1,13 @@
 import numpy as np
 import json
+import os 
 
+def check_and_create_path(path):
+    if not os.path.exists(path):
+        os.makedirs(path)
+        print(f"Path '{path}' created.")
+    else:
+        print(f"Path '{path}' already exists.")
 
 def convert_vec2angle31(n1):
     """
@@ -26,6 +33,11 @@ def convert_vec2angle31(n1):
 
 def save_json(path, save_dict):
     json_str = json.dumps(save_dict, indent=4)
+    dir_path = os.path.dirname(path)
+    os.makedirs(dir_path, exist_ok=True)
+    # Convert dictionary to JSON string
+    json_str = json.dumps(save_dict, indent=4)
+    # check_and_create_path(path)
     with open(path, "w") as fh:
         fh.write(json_str)
         
